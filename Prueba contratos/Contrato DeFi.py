@@ -129,42 +129,6 @@ def depositar_garantia(direccion_cliente, valor, clave_privada_cliente):
     except Exception as e:
         return f"Error desconocido: {e}"
 
-def solicitar_prestamo(direccion_cliente, monto, plazo, clave_privada_cliente):
-    try:
-        # Verificar si el cliente tiene suficiente garantía
-        if not tiene_suficiente_garantia(direccion_cliente, monto):
-            return "Error: No hay suficiente garantía para solicitar el préstamo."
-
-        # Preparar la transacción para solicitar préstamo
-        tx = contract.functions.solicitarPrestamo(monto, plazo).buildTransaction({
-            'from': direccion_cliente,
-            'nonce': w3.eth.getTransactionCount(direccion_cliente),
-            'gas': 2000000,  # Ajustar según sea necesario
-            'gasPrice': w3.toWei('50', 'gwei')  # Ajustar según sea necesario
-        })
-
-        # Firmar la transacción con la clave privada del cliente
-        signed_tx = w3.eth.account.signTransaction(tx, private_key=clave_privada_cliente)
-
-        # Enviar la transacción a la blockchain
-        tx_hash = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
-
-        # Esperar la confirmación de la transacción
-        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-
-        # Verificar el estado de la transacción
-        if tx_receipt.status == 1:
-            return f"La solicitud de préstamo fue exitosa. ID del préstamo: {tx_receipt.transactionHash.hex()}"
-        else:
-            return "Error: La transacción falló."
-
-    except ValueError as e:
-        return f"Error: {e}"
-    except TransactionNotFound:
-        return "Error: No se encontró la transacción."
-    except Exception as e:
-        return f"Error desconocido: {e}"
-
 # Función auxiliar para verificar si el cliente tiene suficiente garantía
 def tiene_suficiente_garantia(direccion_cliente, monto):
     # Implementa la lógica para verificar si el cliente tiene suficiente garantía
